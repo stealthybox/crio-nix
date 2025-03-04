@@ -96,6 +96,7 @@
    href="extra.css" />
   <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
     charset="utf-8" type="text/javascript"></script>
+  <meta name="duration" content="25" />
 </head>
 <body>
 <div class="slide titlepage">
@@ -172,6 +173,31 @@ such as the default one on the local filesystem
 <li>Place to put store objects.</li>
 <li>Keeps track of references.</li>
 <li>Keeps track of what is valid.</li>
+</ul>
+</div>
+<div id="store-a-powerful-abstraction" class="slide section level1">
+<h1>Store: a powerful abstraction</h1>
+<ul>
+<li>Can copy objects between them, preserving shared references.</li>
+<li>Simplified object model compared to arbitrary filesystems.</li>
+<li>Multiple protocols+implementations.
+<ul>
+<li><a
+href="">https://nix.dev/manual/nix/latest/command-ref/new-cli/nix3-help-stores</a></li>
+<li><a
+href="https://flox.dev/docs/concepts/packages-and-catalog/#supported-package-metadata">Flox
+Catalog</a></li>
+<li><a
+href="https://blog.replit.com/super-colliding-nix-stores">Replit’s
+local-overlay-store</a></li>
+<li><a href="https://www.cachix.org/">Cachix</a></li>
+<li><a
+href="https://code.tvl.fyi/tree/tvix/nar-bridge">//tvix/nar-bridge</a></li>
+<li><a
+href="https://github.com/nix-community/harmonia">Harmonia</a></li>
+<li><a href="https://github.com/nix-community/trustix">Trustix</a></li>
+</ul></li>
+<li>Work-in-progress to more easily expose the API.</li>
 </ul>
 </div>
 <div id="the-problem" class="slide section level1">
@@ -277,10 +303,14 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">$</span> export NIX_STORE=/opt/store</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">$</span> nix copy <span class="at">--store</span> <span class="va">$PWD</span>/opt-root <span class="at">--to</span> <span class="va">$PWD</span>/lambda-root <span class="op">&lt;</span>some-package<span class="op">&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="ex">$</span> zip <span class="at">--symlinks</span> <span class="at">-r</span> <span class="va">$PWD</span>/opt-root <span class="pp">*</span></span></code></pre></div>
-<p>Just zip, upload, and run. Can deploy as a layer or symlink
-<code>/opt -&gt; /var/task/opt</code>. Or build against
-<code>/var/task/store</code>.</p>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="ex">$</span> zip <span class="at">--symlinks</span> <span class="at">-r</span> function.zip <span class="va">$PWD</span>/opt-root/<span class="pp">*</span></span></code></pre></div>
+<ul>
+<li>Just zip, upload, and run.</li>
+<li>Can deploy as a layer or symlink
+<code>/opt -&gt; /var/task/opt</code>, or</li>
+<li>build against <code>/var/task/store</code></li>
+<li>…</li>
+</ul>
 </div>
 <div id="deploying---container" class="slide section level1">
 <h1>Deploying - Container</h1>
@@ -291,21 +321,27 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="ex">$</span> ln <span class="at">-st</span> <span class="va">$PWD</span>/lambda-root <span class="va">$(</span></span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="ex">nix</span> build <span class="at">--print-out-paths</span> <span class="at">--no-link</span> nixpkgs#hello </span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    <span class="va">)</span>/<span class="dt">{bin</span><span class="op">,</span><span class="dt">lib</span><span class="op">,</span><span class="dt">etc</span><span class="op">,</span><span class="dt">include</span><span class="op">,</span><span class="dt">share</span><span class="op">,</span><span class="dt">doc}</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="ex">$</span> cat Dockerfile</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="ex">FROM</span> scratch</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="ex">COPY</span> ./lambda-root/opt /</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="ex">RUN</span> /bin/hello</span></code></pre></div>
-<p>Just zip, upload, and run.</p>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="ex">$</span> cat Dockerfile</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="ex">FROM</span> scratch</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="ex">COPY</span> ./lambda-root/opt /</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="ex">CMD</span> <span class="pp">[</span><span class="st">&quot;/bin/hello&quot;</span><span class="pp">]</span></span></code></pre></div>
+<p>Just build, push, and run.</p>
 </div>
 <div id="cachenix-pollution" class="slide section level1">
 <h1>~/.cache/nix pollution</h1>
 <p>Be careful, some of the <code>~/.cache</code> and
-<code>/nix/var</code> things don’t know which store they belong to.</p>
+<code>/nix/var</code> things don’t know which store they belong to.
+Helpful to set these options to isolate them into their own
+directory.</p>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">ROOT</span><span class="op">=</span><span class="va">$PWD</span>/root</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">NIX_USER_CONF_FILES</span><span class="op">=</span><span class="va">$ROOT</span></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">NIX_CONF_DIR</span><span class="op">=</span><span class="va">$ROOT</span></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="bu">export</span> <span class="va">NIX_CACHE_HOME</span><span class="op">=</span><span class="va">$ROOT</span></span></code></pre></div>
+<p>(Added in Nix 2.25.)</p>
+<p>Question: should caches be associated with a specific store, by
+default? Currently XDG + user based.</p>
 </div>
 <div id="solution---step-3" class="slide section level1">
 <h1>Solution - Step 3</h1>
@@ -326,9 +362,10 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="
 <span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="st">    log   = </span><span class="va">$ROOT</span><span class="st">/opt/var/log/nix &amp;</span></span>
 <span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="st">    store = /opt/store</span></span>
 <span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="st">substituters =</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="st">&quot;</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="ex">nix</span> build <span class="at">--file</span> ~/nixpkgs hello</span></code></pre></div>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="st">builders =</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="st">&quot;</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="ex">nix</span> build <span class="at">--file</span> ~/nixpkgs hello</span></code></pre></div>
 </div>
 <div id="idea---multiple-interacting-stores"
 class="slide section level1">
@@ -372,10 +409,14 @@ compatible</li>
 </div>
 <div id="idea---use-the-conda-trick" class="slide section level1">
 <h1>Idea - Use the “conda” trick</h1>
-<p>Conda builds software in a similar way to nix: - uses the prefix
-<code>/home/anaconda1anaconda2anaconda3</code>, then - download them to
-the client, then - rewrite those paths after downloading them using
-patchelf+mods to the user’s actual HOME directory.</p>
+<p>Conda builds software in a similar way to nix:</p>
+<ul>
+<li>uses the prefix <code>/home/anaconda1anaconda2anaconda3</code>,
+then</li>
+<li>download them to the client, then</li>
+<li>rewrite those paths after downloading them using patchelf+mods to
+the user’s actual HOME directory.</li>
+</ul>
 <p>Should we explore this?</p>
 </div>
 <div id="demo-0-basic-build" class="slide section level1">

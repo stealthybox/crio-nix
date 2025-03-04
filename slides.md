@@ -4,7 +4,7 @@ subtitle: "Beyond the Default Store"
 author:
 - "Tom Bereknyei"
 - (tomberek)
-
+duration: 25
 
 ---
 
@@ -63,6 +63,21 @@ author:
 
 ---
 
+# Store: a powerful abstraction
+
+- Can copy objects between them, preserving shared references.
+- Simplified object model compared to arbitrary filesystems.
+- Multiple protocols+implementations.
+	- [https://nix.dev/manual/nix/latest/command-ref/new-cli/nix3-help-stores]()
+	- [Flox Catalog](https://flox.dev/docs/concepts/packages-and-catalog/#supported-package-metadata)
+	- [Replit's local-overlay-store](https://blog.replit.com/super-colliding-nix-stores)
+	- [Cachix](https://www.cachix.org/)
+	- [//tvix/nar-bridge](https://code.tvl.fyi/tree/tvix/nar-bridge)
+	- [Harmonia](https://github.com/nix-community/harmonia)
+	- [Trustix](https://github.com/nix-community/trustix)
+- Work-in-progress to more easily expose the API.
+
+---
 
 # The problem
 
@@ -170,10 +185,13 @@ Thank you, 0xide [https://oxide.computer/]()
 ```bash
 $ export NIX_STORE=/opt/store
 $ nix copy --store $PWD/opt-root --to $PWD/lambda-root <some-package>
-$ zip --symlinks -r $PWD/opt-root *
+$ zip --symlinks -r function.zip $PWD/opt-root/*
 ```
 
-Just zip, upload, and run. Can deploy as a layer or symlink `/opt -> /var/task/opt`. Or build against `/var/task/store`.
+- Just zip, upload, and run.
+- Can deploy as a layer or symlink `/opt -> /var/task/opt`, or
+- build against `/var/task/store`
+- ...
 
 ---
 
@@ -186,19 +204,20 @@ $ nix copy --to $PWD/lambda-root nixpkgs#hello
 $ ln -st $PWD/lambda-root $(
 	nix build --print-out-paths --no-link nixpkgs#hello 
 	)/{bin,lib,etc,include,share,doc}
+
 $ cat Dockerfile
 FROM scratch
 COPY ./lambda-root/opt /
-RUN /bin/hello
+CMD ["/bin/hello"]
 ```
 
-Just zip, upload, and run.
+Just build, push, and run.
 
 ---
 
 # ~/.cache/nix pollution
 
-Be careful, some of the `~/.cache` and `/nix/var` things don't know which store they belong to.
+Be careful, some of the `~/.cache` and `/nix/var` things don't know which store they belong to. Helpful to set these options to isolate them into their own directory.
 
 ```bash
 export ROOT=$PWD/root
@@ -206,6 +225,10 @@ export NIX_USER_CONF_FILES=$ROOT
 export NIX_CONF_DIR=$ROOT
 export NIX_CACHE_HOME=$ROOT
 ```
+
+(Added in Nix 2.25.)
+
+Question: should caches be associated with a specific store, by default? Currently XDG + user based.
 
 ---
 
@@ -228,6 +251,7 @@ store = local?
 	log   = $ROOT/opt/var/log/nix &
 	store = /opt/store
 substituters =
+builders =
 
 "
 nix build --file ~/nixpkgs hello
@@ -275,6 +299,7 @@ nix build
 # Idea - Use the "conda" trick
 
 Conda builds software in a similar way to nix: 
+
 - uses the prefix `/home/anaconda1anaconda2anaconda3`, then
 - download them to the client, then
 - rewrite those paths after downloading them using patchelf+mods to the user's actual HOME directory.
