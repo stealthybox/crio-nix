@@ -90,8 +90,39 @@ duration: 25
 
 ---
 
-# MORE CONTENT HERE
+# Where are we today? and references
 
+- Local overlay stores
+	- [Nix 2.25 Manual](https://nix.dev/manual/nix/2.25/command-ref/new-cli/nix3-help-stores#experimental-local-overlay-store)
+	- [](https://discourse.nixos.org/t/super-colliding-nix-stores/28462)
+	- [](https://blog.replit.com/super-colliding-nix-stores)
+- [Optimizing Docker Layers - grahamc](https://grahamc.com/blog/nix-and-layered-docker-images/)
+- Streaming strategies
+- [nix-snapshotter - pdtpartners](https://github.com/pdtpartners/nix-snapshotter)
+- [https://flox.dev/blog/nix-and-containers-why-not-both/]()
+- Custom Layer Strategies: [Nixpkgs PR 122608](https://github.com/NixOS/nixpkgs/pull/122608)
+
+---
+# Local Overlay Stores
+---
+# Optimizing Docker Layers
+---
+# nix-snapshotter
+---
+
+# Custom Layer Strategies
+
+- See Nixpkgs PR 122608 [https://github.com/NixOS/nixpkgs/pull/122608]()
+
+```json
+[
+  ["subcomponent_out" [pkgs.python3]]
+  ["over" "rest" ["pipe" [
+        ["popularity_contest"]
+        ["limit_layers" 100]
+  ]]]
+]
+```
 ---
 
 # Demo 1: Nix Expressions to Build Containers
