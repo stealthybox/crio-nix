@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nix-host-manager
+  namespace: flox-poc-mgmt
+spec:
+  selector:
+    matchLabels:
+      name: nix-host-manager
+  template:
+    metadata:
+      labels:
+        name: nix-host-manager
+    spec:
+      # tolerations:
+      # # these tolerations are to have the daemonset runnable on control plane nodes
+      # # remove them if your control plane nodes should not run pods
+      # - key: node-role.kubernetes.io/control-plane
+      #   operator: Exists
+      #   effect: NoSchedule
+      # - key: node-role.kubernetes.io/master
+      #   operator: Exists
+      #   effect: NoSchedule
+      containers:
+      - image: 842676004212.dkr.ecr.eu-west-3.amazonaws.com/soci-test:nix
+        name: nix-host-manager
+        command: [ "/bin/sh", "-c", "--" ]
+        args:
+        - nix shell
+            nixpkgs#coreutils
+            nixpkgs#hello
+          --command echo done populating;
+          tail -f /dev/null;
+        volumeMounts:
+        - mountPath: /nix
+          name: host-shared-nix
+          readOnly: false  # has write access to the host nix store, do not modify when other containers are running
+      volumes:
+      - name: host-shared-nix
+        hostPath: 
+          path: /hostdata/nix/
+      terminationGracePeriodSeconds: 1 # TODO: workaround to kill `tail -f /dev/null`

@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: build-runner
+  namespace: flox-poc-overlay
+  labels:
+    app: build-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: build-runner
+  template:
+    metadata:
+      labels:
+        app: build-runner
+    spec:
+      containers:
+      - name: mount-manager
+        securityContext:
+          privileged: true
+        image: 842676004212.dkr.ecr.eu-west-3.amazonaws.com/soci-test:nix
+        command: [ "/bin/sh", "-c", "--" ]
+        args:
+        - mkdir -p /data/upper/store;
+          mkdir -p /data/work/store;
+          mkdir -p /nix-overlay/store;
+          mkdir -p /nix-overlay/var/nix;
+          mkdir -p /nix-overlay/home;
+          busybox chown -R 30000:30000 /nix-overlay/var;
+          busybox chmod -R 777 /nix-overlay/var;
+          busybox chown -R 30000:30000 /nix-overlay/home;
+          busybox chmod -R 777 /nix-overlay/home;
+
+          ls -alh /nix-ro;
+          busybox mount -t overlay -o lowerdir=/nix-ro/nix/store -o upperdir=/data/upper/store -o workdir=/data/work overlay /nix-overlay/store;
+
+          busybox chown 30000:30000 /nix-overlay/store;
+          busybox chmod 777 /nix-overlay/store;
+
+          echo doing nix stuff;
+          busybox touch /nix-overlay/var/.flox-setup-finished;
+          cat /proc/mounts | busybox grep nix
+ 
+          tail -f /dev/null;
+        volumeMounts:
+        - mountPath: /nix-ro
+          name: host-shared-nix
+        - mountPath: /data
+          name: overlay
+        - mountPath: /nix-overlay
+          name: nix-in-container-mount
+          mountPropagation: Bidirectional
+        lifecycle:
+          preStop:
+            exec:
+              command: ["umount", "/nix-overlay"]
+
+      - image: 842676004212.dkr.ecr.eu-west-3.amazonaws.com/soci-test:nix
+        name: user-build
+        command: [ "/bin/sh", "-c", "--" ]
+        securityContext:
+          runAsUser: 30000
+        env:
+        - name: HOME
+          value: /nix/home
+        - name: TMPDIR
+          value: /nix/home/tmp
+        - name: PATH
+          value: /nix/home/.nix-profile/bin:/usr/bin:/bin
+        args:
+        # TODO: split mount-manager into init container and mount-cleanup
+        # add local-overlay-store settings and mount to make it visible
+        - sleep 3;
+          mkdir -p /nix/home/tmp;
+          mkdir -p ~/.config/nix;
+          echo "extra-experimental-features = nix-command flakes read-only-local-store local-overlay-store" > ~/.config/nix/nix.conf;
+          echo "store = local-overlay://?lower-store=/nix-ro%3Fread-only%3Dtrue&upper-layer=/data/upper/store" >> ~/.config/nix/nix.conf;
+          nix store info --debug;
+
+          nix path-info --offline /nix/store/ad15fcvzy668ksn96xzpwqqj4hxi15ac-util-linux-2.39.4-bin --json;
+
+          nix profile install nixpkgs#hello;
+          echo done;
+          tail -f /dev/null;
+        volumeMounts:
+        - mountPath: /nix
+          name: nix-in-container-mount
+          readOnly: false  # has write access to the overlayed nix mount
+        - mountPath: /data
+          name: overlay
+        - mountPath: /nix-ro
+          name: host-shared-nix
+          readOnly: true
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /nix/var/.flox-setup-finished
+          initialDelaySeconds: 0
+          periodSeconds: 1
+          failureThreshold: 300
+
+      volumes:
+      - name: host-shared-root
+        hostPath:
+          path: /hostdata/
+      - name: host-shared-nix
+        hostPath:
+          path: /hostdata/root-dir-2
+      - name: overlay
+        emptyDir: {}
+        #          medium: Memory
+      - name: nix-in-container-mount
+        emptyDir: {}
+      terminationGracePeriodSeconds: 1 # TODO: workaround to kill `tail -f /dev/null`
