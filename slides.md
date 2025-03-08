@@ -1,10 +1,10 @@
 ---
 title: "Rethinking the Container Layer with Nix"
-subtitle: "Where we're going, we won't need overlay."
+subtitle: "Where we're going, we won't need overlays"
 author:
 - "Leigh Capili"
 - "Tom Bereknyei"
-duration: 25
+duration: 60
 
 ---
 
@@ -233,6 +233,16 @@ A declarative framework for package management, builds and deployments
 6. ???
 7. Profit
 :::
+
+---
+
+# Some numbers - python
+![](./python.png){width=100% .center-img}
+
+---
+
+# Some numbers - size
+![](./builds.png){width=100% .center-img}
 
 ---
 
