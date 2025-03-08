@@ -14,7 +14,7 @@ duration: 25
 * What: Discuss the OCI layer paradigm and how to disrupt it.
 * When: Right now!
 * Where: PlanetNix @ SCALE 2025
-* Why: Deploying Nix Stores into Kubernetes.
+* Why: Deploying into Kubernetes with Nix
 
 ---
 
@@ -23,7 +23,20 @@ duration: 25
 - Containers are built from layers, but how many layers can you actually stack?  
 - Why is there a limit, and what does it mean for your containerized applications?  
 - How can I compose things?
-- Let’s explore the constraints and how we can rethink container layers with **Nix**.
+- Let’s explore the constraints and how we can rethink layers with **Nix**.
+
+::: notes
+@Tom: 
+:::
+---
+
+# Rule: Ask questions!
+
+* If something isn't clear. Interrupt me.
+* If you have any question. Interrupt me.
+* No really... interrupt me, otherwise I will just keep talking.
+
+![](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWh0eGxpYmkwN3JicDJ3OHFia2hoYTd6c2o4eHpjcjNnbTlpMm4waSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jnhXd7KT8UTk5WIgiV/giphy.gif){width=50% .center-img}
 
 ::: notes
 @Tom: 
@@ -48,7 +61,9 @@ duration: 25
 
 - Containers revolutionized virtualization by combining lightweight isolation with packaging capabilities.  
 - They bundle applications and dependencies into portable, reproducible units.  
+- Huge Cloud Native ecosystem build upon the core primitive.
 - But are we fully leveraging their potential?  
+- We often build containers in a layered fashion, do we have to?
 
 ::: notes
 @Tom: 
@@ -315,11 +330,18 @@ Cut out Python from the rest of the graph:
 
 ---
 
-# Why Nix and Kubernetes?
+# What now? Call-to-action
+
+![](./crowd.jpg){style="float:right" width=40%}
 
 - Nix brings reproducibility, flexibility, and efficiency to containerized workflows.  
 - Kubernetes provides the orchestration layer to scale these benefits across clusters.  
 - Together, they enable a new paradigm for cloud-native development.  
+- Explore efficiency gains.
+- Improve support for conflict-free composition in container runtimes.
+- Reach out to us if you are interested in these topics.
+- Have fun!
+
 
 ::: notes
 @Tom: 
