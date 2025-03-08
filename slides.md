@@ -1,6 +1,6 @@
 ---
 title: "Rethinking the Container Layer with Nix"
-subtitle: "Where we're going, we won't need layers."
+subtitle: "Where we're going, we won't need overlay."
 author:
 - "Leigh Capili"
 - "Tom Bereknyei"
@@ -20,8 +20,6 @@ duration: 25
 
 # Getting started
 
-**DRAFT**
-
 - Containers are built from layers, but how many layers can you actually stack?  
 - Why is there a limit, and what does it mean for your containerized applications?  
 - How can I compose things?
@@ -35,8 +33,7 @@ duration: 25
 
 # Agenda
 
-**DRAFT**
-
+0. **Introduction**: Containers and their limitations.
 1. **Nix Storage and Packaging Basics**: Understand how Nix stores and manages packages.  
 2. **OCI Image Make-Up**: Break down the anatomy of OCI images and their layers.  
 3. **Demos**: See Nix in action with Kubernetes and container runtimes.  
@@ -49,8 +46,6 @@ duration: 25
 
 # Containers: A Fantastic Virtualization Technology
 
-**DRAFT**
-
 - Containers revolutionized virtualization by combining lightweight isolation with packaging capabilities.  
 - They bundle applications and dependencies into portable, reproducible units.  
 - But are we fully leveraging their potential?  
@@ -61,13 +56,102 @@ duration: 25
 
 ---
 
-**DRAFT**
+# Layers: a mental model for containers
 
-# Bringing Packaging Discipline Further
+![](./layers.png){.center-img width=100%}
 
-- While containers are great, we can push packaging discipline further.  
+---
+
+# Container generation 
+
+## **Dockerfiles are amazing**
+- simple mental model and easy to understand
+- work effectively with low adoption hurdle
+- large corpus of base images and examples
+
+## **...but**
+- how do we share?
+- how to we manage bloat?
+- how to apply best practices?
+- how do we manage supply chain?
+
+---
+
+# Multi-stage builds
+
+::: {style="float:left;width:50%;max-width:50%;"}
+- Some cases are very easy...
+- Some very hard.
+- Dynamic libraries, scripting languages
+- The simple mental model breaks down
+- Language-specific support becomes more critical
+- Runtime-only errors
+:::
+
+![](./multi-build.png){width=50% style="float:right;"}
+
+---
+
+# Nix: a quick intro, pros
+
+A declarative framework for package management, builds and deployments
+
+## **Building software since 2003**
+- Huge number of maintained packages
+- Focused on correctness, provenance and reproducibility
+
+## **Best-practices by default**
+- Must build without network
+- Must build without $HOME
+- Must make dependencies explicit
+
+--- 
+
+# Nix: a quick intro, cons
+
+## **Famous for a steep learning curve**
+- documentation is improving
+- focus of upstream
+- Flox is working to expose a simpler interface
+
+## **Perception problem**
+- Large departure from alpine/debian
+- Few enterprise users who speak publicly
+- Flox Blog Series: Nix in the Wild
+- Conferences: PlanetNix, NixCon
+
+---
+
+# Layers to Graphs
+
+::: {style="float:left;width:50%;max-width:50%;"}
+
+- `docker build`
+    - linear
+    - ordered list
+    - leaves upon leaves
+
+![](./layers-mini.png){width=80%}
+:::
+
+::: {style="float:right;width:50%;max-width:50%;"}
+- `go build`, `npm build`, `nix build`, ...
+    - tree-like
+    - software re-use
+    - distributed
+
+![](./graph.png){width=80%}
+:::
+
+---
+
+# It's all about packaging
+
+- Packaging is the art of making software re-usable.
+- Containers are not a packaging format.
+- "We develop a library, and deliver it as a container." ???
+- While containers are great, we still need packaging.
 - By refining the stack of bits that make up container image layers and OCI manifests, we unlock new cloud-native possibilities.  
-- Enter **Nix**: a functional package manager that brings rigor and reproducibility to the packaging process.
 
 ::: notes
 @Tom: 
@@ -75,39 +159,72 @@ duration: 25
 
 ---
 
-# Nix: Isolated Package Stores
+# Nix: Isolated Package Directories
 
-**DRAFT**
-
+- Normally we use the FHS (File Hierachy Standard)
+	- `/usr/local/share`
+	- `/usr/bin`
+	- `/lib/`
+	- etc...
 - Nix uses a unique approach to package management:  
   - Each package is stored in a hashed folder, isolated from others.  
   - Packages can be combined or used independently, enabling reproducibility and flexibility.  
-- This sounds a lot like a container registry, but with added benefits like atomic updates and no dependency conflicts.  
+- This sounds a lot like a container registry
+	- but with added benefits like atomic updates and no dependency conflicts.  
+
+---
+
+# Conflict-free layers
+- OCI layers can be independent!
+    - content addressed
+    - still need to overlay and combine
+    - check for conflicts, modifications
+    - if they have conflicts, they cannot be re-ordered
+
+- If each package is a conflict-free layer:
+    - we can bind mount them (no layer limitations)
+    - we can share them/ re-use them (better caching)
+    - we can be confident they won’t interact in unexpected ways
 
 ::: notes
-@Leigh: 
+@Tom: 
 :::
 
 ---
 
 # Where are we today? and references
 
-- Local overlay stores
-	- [Nix 2.25 Manual](https://nix.dev/manual/nix/2.25/command-ref/new-cli/nix3-help-stores#experimental-local-overlay-store)
-	- [](https://discourse.nixos.org/t/super-colliding-nix-stores/28462)
-	- [](https://blog.replit.com/super-colliding-nix-stores)
-- [Optimizing Docker Layers - grahamc](https://grahamc.com/blog/nix-and-layered-docker-images/)
-- Streaming strategies
+- [Optimizing Docker Layers - grahamc.com](https://grahamc.com/blog/nix-and-layered-docker-images/)
+- [https://nixery.dev/]()
+- Streaming container builds
 - [nix-snapshotter - pdtpartners](https://github.com/pdtpartners/nix-snapshotter)
 - [https://flox.dev/blog/nix-and-containers-why-not-both/]()
 - Custom Layer Strategies: [Nixpkgs PR 122608](https://github.com/NixOS/nixpkgs/pull/122608)
+- Local overlay stores
+	- [Nix 2.25 Manual](https://nix.dev/manual/nix/2.25/command-ref/new-cli/nix3-help-stores#experimental-local-overlay-store)
+	- [https://discourse.nixos.org/t/super-colliding-nix-stores/28462]()
+	- [https://blog.replit.com/super-colliding-nix-stores]()
 
 ---
-# Local Overlay Stores
+
+# GamePlan - Optimizing Layers
+
+::: incremental
+1. Make each directory a layer.
+2. Combine similar packages/directories into a similar layer.
+3. Use automatic custom strategy to optimize.
+4. Teach OCI to understand non-conflicting layers.
+5. Create tooling so that packages use references immutable or content addressed paths.
+6. ???
+7. Profit
+:::
+
 ---
-# Optimizing Docker Layers
----
-# nix-snapshotter
+
+# More about optimizing images
+
+![](./bryan.png){width=50% .center-img}
+
 ---
 
 # Custom Layer Strategies
@@ -123,36 +240,18 @@ duration: 25
   ]]]
 ]
 ```
+![](./graph.png){width=30%}
+
 ---
 
 # Demo 1: Nix Expressions to Build Containers
-
-**DRAFT**
 
 - Use Nix expressions to define and build container images.  
 - Benefits:  
   - Reproducible builds.  
   - Fine-grained control over dependencies.  
   - No more "it works on my machine" issues.  
-
-::: notes
-@Leigh: 
-:::
-
-
----
-
-# Demo 2: Nix-Snapshotter with Containerd
-
-**DRAFT**
-
-- Replace traditional container layers with Nix store paths.  
-- **nix-snapshotter**: A containerd plugin that pulls dependencies directly from the Nix store.  
-- Advantages:  
-  - Smaller image sizes.  
-  - Made up of fine-grained components, not layers.
-  - Faster container startup times.  
-  - No need for redundant layers in registries.  
+- Showcase custom layering strategies.
 
 ::: notes
 @Tom: 
@@ -160,9 +259,7 @@ duration: 25
 
 ---
 
-# Demo 3: Node-Local Nix Stores
-
-**DRAFT**
+# Demo 2: Node-Local Nix Stores
 
 - Deploy node-local Nix stores in Kubernetes clusters.  
 - Use per-container overlay caches for dynamic dependencies.  
@@ -176,9 +273,37 @@ duration: 25
 
 ---
 
+# Demo 3: Nix-Snapshotter with Containerd
+
+- Replace traditional container layers with Nix store paths.  
+- **nix-snapshotter**: A containerd plugin that pulls dependencies directly from the Nix store.  
+- Advantages:  
+  - Smaller image sizes.  
+  - Made up of fine-grained components, not layers.
+  - Faster container startup times.  
+  - No need for redundant layers in registries.  
+
+::: notes
+@Leigh: 
+:::
+
+---
+
 # Demo 4: Seekable OCI and /nix
 
-**DRAFT**
+- Explore **seekable OCI**: A way to optimize container image access patterns.  
+- Integrate with the Nix store for faster, more efficient container operations.  
+- Use cases:  
+  - Large-scale deployments.  
+  - Performance-critical workloads.  
+
+::: notes
+@Leigh: 
+:::
+
+---
+
+# Demo 5: CRI-O
 
 - Explore **seekable OCI**: A way to optimize container image access patterns.  
 - Integrate with the Nix store for faster, more efficient container operations.  
@@ -193,8 +318,6 @@ duration: 25
 ---
 
 # Why Nix and Kubernetes?
-
-**DRAFT**
 
 - Nix brings reproducibility, flexibility, and efficiency to containerized workflows.  
 - Kubernetes provides the orchestration layer to scale these benefits across clusters.  

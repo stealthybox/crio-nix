@@ -101,7 +101,7 @@
 <body>
 <div class="slide titlepage">
   <h1 class="title">Rethinking the Container Layer with Nix</h1>
-  <p class="subtitle">Where we’re going, we won’t need layers.</p>
+  <p class="subtitle">Where we’re going, we won’t need overlay.</p>
   <p class="author">
 Leigh Capili<br/>Tom Bereknyei
   </p>
@@ -118,7 +118,6 @@ Leigh Capili<br/>Tom Bereknyei
 </div>
 <div id="getting-started" class="slide section level1">
 <h1>Getting started</h1>
-<p><strong>DRAFT</strong></p>
 <ul>
 <li>Containers are built from layers, but how many layers can you
 actually stack?<br />
@@ -133,8 +132,9 @@ layers with <strong>Nix</strong>.</li>
 </div>
 <div id="agenda" class="slide section level1">
 <h1>Agenda</h1>
-<p><strong>DRAFT</strong></p>
-<ol style="list-style-type: decimal">
+<ol start="0" style="list-style-type: decimal">
+<li><strong>Introduction</strong>: Containers and their
+limitations.</li>
 <li><strong>Nix Storage and Packaging Basics</strong>: Understand how
 Nix stores and manages packages.<br />
 </li>
@@ -148,7 +148,6 @@ container runtimes.</li>
 <div id="containers-a-fantastic-virtualization-technology"
 class="slide section level1">
 <h1>Containers: A Fantastic Virtualization Technology</h1>
-<p><strong>DRAFT</strong></p>
 <ul>
 <li>Containers revolutionized virtualization by combining lightweight
 isolation with packaging capabilities.<br />
@@ -159,28 +158,125 @@ reproducible units.<br />
 <li>But are we fully leveraging their potential?</li>
 </ul>
 </div>
-<div class="slide section level1">
-
-<p><strong>DRAFT</strong></p>
-</div>
-<div id="bringing-packaging-discipline-further"
+<div id="layers-a-mental-model-for-containers"
 class="slide section level1">
-<h1>Bringing Packaging Discipline Further</h1>
+<h1>Layers: a mental model for containers</h1>
+<p><img src="./layers.png" class="center-img"
+style="width:100.0%" /></p>
+</div>
+<div id="container-generation" class="slide section level1">
+<h1>Container generation</h1>
+<h2 id="dockerfiles-are-amazing"><strong>Dockerfiles are
+amazing</strong></h2>
 <ul>
-<li>While containers are great, we can push packaging discipline
-further.<br />
-</li>
-<li>By refining the stack of bits that make up container image layers
-and OCI manifests, we unlock new cloud-native possibilities.<br />
-</li>
-<li>Enter <strong>Nix</strong>: a functional package manager that brings
-rigor and reproducibility to the packaging process.</li>
+<li>simple mental model and easy to understand</li>
+<li>work effectively with low adoption hurdle</li>
+<li>large corpus of base images and examples</li>
+</ul>
+<h2 id="but"><strong>…but</strong></h2>
+<ul>
+<li>how do we share?</li>
+<li>how to we manage bloat?</li>
+<li>how to apply best practices?</li>
+<li>how do we manage supply chain?</li>
 </ul>
 </div>
-<div id="nix-isolated-package-stores" class="slide section level1">
-<h1>Nix: Isolated Package Stores</h1>
-<p><strong>DRAFT</strong></p>
+<div id="multi-stage-builds" class="slide section level1">
+<h1>Multi-stage builds</h1>
+<div style="float:left;width:50%;max-width:50%;">
 <ul>
+<li>Some cases are very easy…</li>
+<li>Some very hard.</li>
+<li>Dynamic libraries, scripting languages</li>
+<li>The simple mental model breaks down</li>
+<li>Language-specific support becomes more critical</li>
+<li>Runtime-only errors</li>
+</ul>
+</div>
+<p><img src="./multi-build.png" style="float:right;;width:50.0%" /></p>
+</div>
+<div id="nix-a-quick-intro-pros" class="slide section level1">
+<h1>Nix: a quick intro, pros</h1>
+<p>A declarative framework for package management, builds and
+deployments</p>
+<h2 id="building-software-since-2003"><strong>Building software since
+2003</strong></h2>
+<ul>
+<li>Huge number of maintained packages</li>
+<li>Focused on correctness, provenance and reproducibility</li>
+</ul>
+<h2 id="best-practices-by-default"><strong>Best-practices by
+default</strong></h2>
+<ul>
+<li>Must build without network</li>
+<li>Must build without $HOME</li>
+<li>Must make dependencies explicit</li>
+</ul>
+</div>
+<div id="nix-a-quick-intro-cons" class="slide section level1">
+<h1>Nix: a quick intro, cons</h1>
+<h2 id="famous-for-a-steep-learning-curve"><strong>Famous for a steep
+learning curve</strong></h2>
+<ul>
+<li>documentation is improving</li>
+<li>focus of upstream</li>
+<li>Flox is working to expose a simpler interface</li>
+</ul>
+<h2 id="perception-problem"><strong>Perception problem</strong></h2>
+<ul>
+<li>Large departure from alpine/debian</li>
+<li>Few enterprise users who speak publicly</li>
+<li>Flox Blog Series: Nix in the Wild</li>
+<li>Conferences: PlanetNix, NixCon</li>
+</ul>
+</div>
+<div id="layers-to-graphs" class="slide section level1">
+<h1>Layers to Graphs</h1>
+<div style="float:left;width:50%;max-width:50%;">
+<ul>
+<li><code>docker build</code>
+<ul>
+<li>linear</li>
+<li>ordered list</li>
+<li>leaves upon leaves</li>
+</ul></li>
+</ul>
+<p><img src="./layers-mini.png" style="width:80.0%" /></p>
+</div>
+<div style="float:right;width:50%;max-width:50%;">
+<ul>
+<li><code>go build</code>, <code>npm build</code>,
+<code>nix build</code>, …
+<ul>
+<li>tree-like</li>
+<li>software re-use</li>
+<li>distributed</li>
+</ul></li>
+</ul>
+<p><img src="./graph.png" style="width:80.0%" /></p>
+</div>
+</div>
+<div id="its-all-about-packaging" class="slide section level1">
+<h1>It’s all about packaging</h1>
+<ul>
+<li>Packaging is the art of making software re-usable.</li>
+<li>Containers are not a packaging format.</li>
+<li>“We develop a library, and deliver it as a container.” ???</li>
+<li>While containers are great, we still need packaging.</li>
+<li>By refining the stack of bits that make up container image layers
+and OCI manifests, we unlock new cloud-native possibilities.</li>
+</ul>
+</div>
+<div id="nix-isolated-package-directories" class="slide section level1">
+<h1>Nix: Isolated Package Directories</h1>
+<ul>
+<li>Normally we use the FHS (File Hierachy Standard)
+<ul>
+<li><code>/usr/local/share</code></li>
+<li><code>/usr/bin</code></li>
+<li><code>/lib/</code></li>
+<li>etc…</li>
+</ul></li>
 <li>Nix uses a unique approach to package management:
 <ul>
 <li>Each package is stored in a hashed folder, isolated from
@@ -190,28 +286,40 @@ others.<br />
 reproducibility and flexibility.<br />
 </li>
 </ul></li>
-<li>This sounds a lot like a container registry, but with added benefits
-like atomic updates and no dependency conflicts.</li>
+<li>This sounds a lot like a container registry
+<ul>
+<li>but with added benefits like atomic updates and no dependency
+conflicts.</li>
+</ul></li>
+</ul>
+</div>
+<div id="conflict-free-layers" class="slide section level1">
+<h1>Conflict-free layers</h1>
+<ul>
+<li>OCI layers can be independent!
+<ul>
+<li>content addressed</li>
+<li>still need to overlay and combine</li>
+<li>check for conflicts, modifications</li>
+<li>if they have conflicts, they cannot be re-ordered</li>
+</ul></li>
+<li>If each package is a conflict-free layer:
+<ul>
+<li>we can bind mount them (no layer limitations)</li>
+<li>we can share them/ re-use them (better caching)</li>
+<li>we can be confident they won’t interact in unexpected ways</li>
+</ul></li>
 </ul>
 </div>
 <div id="where-are-we-today-and-references"
 class="slide section level1">
 <h1>Where are we today? and references</h1>
 <ul>
-<li>Local overlay stores
-<ul>
-<li><a
-href="https://nix.dev/manual/nix/2.25/command-ref/new-cli/nix3-help-stores#experimental-local-overlay-store">Nix
-2.25 Manual</a></li>
-<li><a
-href="https://discourse.nixos.org/t/super-colliding-nix-stores/28462"></a></li>
-<li><a
-href="https://blog.replit.com/super-colliding-nix-stores"></a></li>
-</ul></li>
 <li><a
 href="https://grahamc.com/blog/nix-and-layered-docker-images/">Optimizing
-Docker Layers - grahamc</a></li>
-<li>Streaming strategies</li>
+Docker Layers - grahamc.com</a></li>
+<li><a href="">https://nixery.dev/</a></li>
+<li>Streaming container builds</li>
 <li><a
 href="https://github.com/pdtpartners/nix-snapshotter">nix-snapshotter -
 pdtpartners</a></li>
@@ -220,9 +328,36 @@ href="">https://flox.dev/blog/nix-and-containers-why-not-both/</a></li>
 <li>Custom Layer Strategies: <a
 href="https://github.com/NixOS/nixpkgs/pull/122608">Nixpkgs PR
 122608</a></li>
+<li>Local overlay stores
+<ul>
+<li><a
+href="https://nix.dev/manual/nix/2.25/command-ref/new-cli/nix3-help-stores#experimental-local-overlay-store">Nix
+2.25 Manual</a></li>
+<li><a
+href="">https://discourse.nixos.org/t/super-colliding-nix-stores/28462</a></li>
+<li><a
+href="">https://blog.replit.com/super-colliding-nix-stores</a></li>
+</ul></li>
 </ul>
-<h2 id="optimizing-docker-layers"># Optimizing Docker Layers</h2>
-<h2 id="nix-snapshotter"># nix-snapshotter</h2>
+</div>
+<div id="gameplan---optimizing-layers" class="slide section level1">
+<h1>GamePlan - Optimizing Layers</h1>
+<div>
+<ol class="incremental" style="list-style-type: decimal">
+<li>Make each directory a layer.</li>
+<li>Combine similar packages/directories into a similar layer.</li>
+<li>Use automatic custom strategy to optimize.</li>
+<li>Teach OCI to understand non-conflicting layers.</li>
+<li>Create tooling so that packages use references immutable or content
+addressed paths.</li>
+<li>???</li>
+<li>Profit</li>
+</ol>
+</div>
+</div>
+<div id="more-about-optimizing-images" class="slide section level1">
+<h1>More about optimizing images</h1>
+<p><img src="./bryan.png" class="center-img" style="width:50.0%" /></p>
 </div>
 <div id="custom-layer-strategies" class="slide section level1">
 <h1>Custom Layer Strategies</h1>
@@ -238,11 +373,11 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>        <span class="ot">[</span><span class="st">&quot;limit_layers&quot;</span> <span class="dv">100</span><span class="ot">]</span></span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="ot">]]]</span></span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p><img src="./graph.png" style="width:30.0%" /></p>
 </div>
 <div id="demo-1-nix-expressions-to-build-containers"
 class="slide section level1">
 <h1>Demo 1: Nix Expressions to Build Containers</h1>
-<p><strong>DRAFT</strong></p>
 <ul>
 <li>Use Nix expressions to define and build container images.<br />
 </li>
@@ -252,14 +387,30 @@ class="slide section level1">
 </li>
 <li>Fine-grained control over dependencies.<br />
 </li>
-<li>No more “it works on my machine” issues.</li>
+<li>No more “it works on my machine” issues.<br />
+</li>
+</ul></li>
+<li>Showcase custom layering strategies.</li>
+</ul>
+</div>
+<div id="demo-2-node-local-nix-stores" class="slide section level1">
+<h1>Demo 2: Node-Local Nix Stores</h1>
+<ul>
+<li>Deploy node-local Nix stores in Kubernetes clusters.<br />
+</li>
+<li>Use per-container overlay caches for dynamic dependencies.<br />
+</li>
+<li>Benefits:
+<ul>
+<li>Efficient dependency management for container workloads.<br />
+</li>
+<li>Reduced network overhead for pulling dependencies.</li>
 </ul></li>
 </ul>
 </div>
-<div id="demo-2-nix-snapshotter-with-containerd"
+<div id="demo-3-nix-snapshotter-with-containerd"
 class="slide section level1">
-<h1>Demo 2: Nix-Snapshotter with Containerd</h1>
-<p><strong>DRAFT</strong></p>
+<h1>Demo 3: Nix-Snapshotter with Containerd</h1>
 <ul>
 <li>Replace traditional container layers with Nix store paths.<br />
 </li>
@@ -277,25 +428,25 @@ dependencies directly from the Nix store.<br />
 </ul></li>
 </ul>
 </div>
-<div id="demo-3-node-local-nix-stores" class="slide section level1">
-<h1>Demo 3: Node-Local Nix Stores</h1>
-<p><strong>DRAFT</strong></p>
+<div id="demo-4-seekable-oci-and-nix" class="slide section level1">
+<h1>Demo 4: Seekable OCI and /nix</h1>
 <ul>
-<li>Deploy node-local Nix stores in Kubernetes clusters.<br />
+<li>Explore <strong>seekable OCI</strong>: A way to optimize container
+image access patterns.<br />
 </li>
-<li>Use per-container overlay caches for dynamic dependencies.<br />
+<li>Integrate with the Nix store for faster, more efficient container
+operations.<br />
 </li>
-<li>Benefits:
+<li>Use cases:
 <ul>
-<li>Efficient dependency management for container workloads.<br />
+<li>Large-scale deployments.<br />
 </li>
-<li>Reduced network overhead for pulling dependencies.</li>
+<li>Performance-critical workloads.</li>
 </ul></li>
 </ul>
 </div>
-<div id="demo-4-seekable-oci-and-nix" class="slide section level1">
-<h1>Demo 4: Seekable OCI and /nix</h1>
-<p><strong>DRAFT</strong></p>
+<div id="demo-5-cri-o" class="slide section level1">
+<h1>Demo 5: CRI-O</h1>
 <ul>
 <li>Explore <strong>seekable OCI</strong>: A way to optimize container
 image access patterns.<br />
@@ -313,7 +464,6 @@ operations.<br />
 </div>
 <div id="why-nix-and-kubernetes" class="slide section level1">
 <h1>Why Nix and Kubernetes?</h1>
-<p><strong>DRAFT</strong></p>
 <ul>
 <li>Nix brings reproducibility, flexibility, and efficiency to
 containerized workflows.<br />
