@@ -39,7 +39,7 @@ duration: 25
 3. **Demos**: See Nix in action with Kubernetes and container runtimes.  
 
 ::: notes
-@Leigh: 
+@Tom: 
 :::
 
 ---
@@ -207,21 +207,21 @@ A declarative framework for package management, builds and deployments
 
 ---
 
-# GamePlan - Optimizing Layers
+# Game plan - Optimizing Layers
 
 ::: incremental
 1. Make each directory a layer.
 2. Combine similar packages/directories into a similar layer.
 3. Use automatic custom strategy to optimize.
 4. Teach OCI to understand non-conflicting layers.
-5. Create tooling so that packages use references immutable or content addressed paths.
+5. Create tooling so that packages use immutable references or content addressed paths.
 6. ???
 7. Profit
 :::
 
 ---
 
-# More about optimizing images
+# More about optimizing image sizes
 
 ![](./bryan.png){width=50% .center-img}
 
@@ -229,8 +229,21 @@ A declarative framework for package management, builds and deployments
 
 # Custom Layer Strategies
 
+::: {width=100%}
+::: {style="float:left;width:50%;max-width:50%;"}
 - See Nixpkgs PR 122608 [https://github.com/NixOS/nixpkgs/pull/122608]()
+- Allows for graph slicing, merging, filtering, manipulation.
+:::
 
+::: {style="float:right;width:50%;max-width:50%;"}
+
+![](./graph.png){width=100%}
+
+:::
+
+:::
+
+Cut out Python from the rest of the graph:
 ```json
 [
   ["subcomponent_out" [pkgs.python3]]
@@ -240,7 +253,6 @@ A declarative framework for package management, builds and deployments
   ]]]
 ]
 ```
-![](./graph.png){width=30%}
 
 ---
 
@@ -268,12 +280,26 @@ A declarative framework for package management, builds and deployments
   - Reduced network overhead for pulling dependencies.  
 
 ::: notes
-@Leigh: 
+@Tom: 
 :::
 
 ---
 
-# Demo 3: Nix-Snapshotter with Containerd
+# Demo 3: Image volumes
+
+- Use an image volume per Nix Store directory.
+- Benefits:  
+  - Uses Kubernetes-native features to define the image.
+  - Efficient mounting and reuse.
+  - Reduced network overhead for pulling dependencies.  
+
+::: notes
+@Tom: 
+:::
+
+---
+
+# Demo 4: Nix-Snapshotter with Containerd
 
 - Replace traditional container layers with Nix store paths.  
 - **nix-snapshotter**: A containerd plugin that pulls dependencies directly from the Nix store.  
@@ -284,35 +310,7 @@ A declarative framework for package management, builds and deployments
   - No need for redundant layers in registries.  
 
 ::: notes
-@Leigh: 
-:::
-
----
-
-# Demo 4: Seekable OCI and /nix
-
-- Explore **seekable OCI**: A way to optimize container image access patterns.  
-- Integrate with the Nix store for faster, more efficient container operations.  
-- Use cases:  
-  - Large-scale deployments.  
-  - Performance-critical workloads.  
-
-::: notes
-@Leigh: 
-:::
-
----
-
-# Demo 5: CRI-O
-
-- Explore **seekable OCI**: A way to optimize container image access patterns.  
-- Integrate with the Nix store for faster, more efficient container operations.  
-- Use cases:  
-  - Large-scale deployments.  
-  - Performance-critical workloads.  
-
-::: notes
-@Leigh: 
+@Tom: 
 :::
 
 ---
@@ -324,7 +322,7 @@ A declarative framework for package management, builds and deployments
 - Together, they enable a new paradigm for cloud-native development.  
 
 ::: notes
-@Leigh: 
+@Tom: 
 :::
 
 ---

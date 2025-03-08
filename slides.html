@@ -340,31 +340,41 @@ href="">https://blog.replit.com/super-colliding-nix-stores</a></li>
 </ul></li>
 </ul>
 </div>
-<div id="gameplan---optimizing-layers" class="slide section level1">
-<h1>GamePlan - Optimizing Layers</h1>
+<div id="game-plan---optimizing-layers" class="slide section level1">
+<h1>Game plan - Optimizing Layers</h1>
 <div>
 <ol class="incremental" style="list-style-type: decimal">
 <li>Make each directory a layer.</li>
 <li>Combine similar packages/directories into a similar layer.</li>
 <li>Use automatic custom strategy to optimize.</li>
 <li>Teach OCI to understand non-conflicting layers.</li>
-<li>Create tooling so that packages use references immutable or content
+<li>Create tooling so that packages use immutable references or content
 addressed paths.</li>
 <li>???</li>
 <li>Profit</li>
 </ol>
 </div>
 </div>
-<div id="more-about-optimizing-images" class="slide section level1">
-<h1>More about optimizing images</h1>
+<div id="more-about-optimizing-image-sizes"
+class="slide section level1">
+<h1>More about optimizing image sizes</h1>
 <p><img src="./bryan.png" class="center-img" style="width:50.0%" /></p>
 </div>
 <div id="custom-layer-strategies" class="slide section level1">
 <h1>Custom Layer Strategies</h1>
+<div width="100%">
+<div style="float:left;width:50%;max-width:50%;">
 <ul>
 <li>See Nixpkgs PR 122608 <a
 href="">https://github.com/NixOS/nixpkgs/pull/122608</a></li>
+<li>Allows for graph slicing, merging, filtering, manipulation.</li>
 </ul>
+</div>
+<div style="float:right;width:50%;max-width:50%;">
+<p><img src="./graph.png" style="width:100.0%" /></p>
+</div>
+</div>
+<p>Cut out Python from the rest of the graph:</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ot">[</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="ot">[</span><span class="st">&quot;subcomponent_out&quot;</span> <span class="ot">[</span><span class="er">pkgs.python3</span><span class="ot">]]</span></span>
@@ -373,7 +383,6 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>        <span class="ot">[</span><span class="st">&quot;limit_layers&quot;</span> <span class="dv">100</span><span class="ot">]</span></span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="ot">]]]</span></span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
-<p><img src="./graph.png" style="width:30.0%" /></p>
 </div>
 <div id="demo-1-nix-expressions-to-build-containers"
 class="slide section level1">
@@ -408,9 +417,21 @@ class="slide section level1">
 </ul></li>
 </ul>
 </div>
-<div id="demo-3-nix-snapshotter-with-containerd"
+<div id="demo-3-image-volumes" class="slide section level1">
+<h1>Demo 3: Image volumes</h1>
+<ul>
+<li>Use an image volume per Nix Store directory.</li>
+<li>Benefits:
+<ul>
+<li>Uses Kubernetes-native features to define the image.</li>
+<li>Efficient mounting and reuse.</li>
+<li>Reduced network overhead for pulling dependencies.</li>
+</ul></li>
+</ul>
+</div>
+<div id="demo-4-nix-snapshotter-with-containerd"
 class="slide section level1">
-<h1>Demo 3: Nix-Snapshotter with Containerd</h1>
+<h1>Demo 4: Nix-Snapshotter with Containerd</h1>
 <ul>
 <li>Replace traditional container layers with Nix store paths.<br />
 </li>
@@ -425,40 +446,6 @@ dependencies directly from the Nix store.<br />
 <li>Faster container startup times.<br />
 </li>
 <li>No need for redundant layers in registries.</li>
-</ul></li>
-</ul>
-</div>
-<div id="demo-4-seekable-oci-and-nix" class="slide section level1">
-<h1>Demo 4: Seekable OCI and /nix</h1>
-<ul>
-<li>Explore <strong>seekable OCI</strong>: A way to optimize container
-image access patterns.<br />
-</li>
-<li>Integrate with the Nix store for faster, more efficient container
-operations.<br />
-</li>
-<li>Use cases:
-<ul>
-<li>Large-scale deployments.<br />
-</li>
-<li>Performance-critical workloads.</li>
-</ul></li>
-</ul>
-</div>
-<div id="demo-5-cri-o" class="slide section level1">
-<h1>Demo 5: CRI-O</h1>
-<ul>
-<li>Explore <strong>seekable OCI</strong>: A way to optimize container
-image access patterns.<br />
-</li>
-<li>Integrate with the Nix store for faster, more efficient container
-operations.<br />
-</li>
-<li>Use cases:
-<ul>
-<li>Large-scale deployments.<br />
-</li>
-<li>Performance-critical workloads.</li>
 </ul></li>
 </ul>
 </div>
