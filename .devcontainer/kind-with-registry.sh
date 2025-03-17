@@ -32,19 +32,40 @@ if [ "$(docker inspect -f '{{.State.Running}}' "${control_plane_name}" 2>/dev/nu
 cat <<EOF | kind create cluster --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+featureGates:
+  ImageVolume: true
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry]
     config_path = "/etc/containerd/certs.d"
 nodes:
 - role: control-plane
-  image: kindest/node:v1.30.0
+  image: stealthybox/kind-node-crio:v1.32.2
   kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        criSocket: unix:///var/run/crio/crio.sock
+        kubeletExtraArgs:
+          node-labels: "ingress-ready=true"
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        criSocket: unix:///var/run/crio/crio.sock
+- role: worker
+  image: stealthybox/kind-node-crio:v1.32.2
+  kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        criSocket: unix:///var/run/crio/crio.sock
+- role: worker
+  image: stealthybox/kind-node-crio:v1.32.2
+  kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        criSocket: unix:///var/run/crio/crio.sock
 EOF
 
 fi
@@ -69,6 +90,20 @@ for node in $(kind get nodes); do
   cat <<EOF | docker exec -i "${node}" cp /dev/stdin "${REGISTRY_DIR}/hosts.toml"
 [host."http://${reg_name}:5000"]
 EOF
+done
+
+for node in $(kind get nodes); do
+  cat <<EOF | docker exec -i "${node}" cp /dev/stdin "/etc/containers/registries.conf"
+[[registry]]
+prefix = "localhost:${reg_port}"
+location = "${reg_name}:5000"
+insecure = true
+[[registry]]
+prefix = "${reg_name}:5000"
+location = "${reg_name}:5000"
+insecure = true
+EOF
+  docker exec "${node}" pkill -HUP crio
 done
 
 # 4. Connect the registry to the cluster network if not already connected

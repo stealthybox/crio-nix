@@ -1,6 +1,11 @@
 # floxtest
 
+
 This is a devcontainer workspace driven by a single Dockerfile.
+** edit: The kind cluster in this devcontainer has been modified: **
+- 1 controlplane node, 2 workers
+- Uses CRI-O instead of containerd
+- Enables Kubernetes v1.32 Beta Feature for ImageVolumes
 
 The Dockerfile:
 - Uses the microsoft ubuntu base for full compatibility with the devcontainer ecosystem
