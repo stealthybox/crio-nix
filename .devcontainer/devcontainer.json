@@ -1,5 +1,5 @@
 {
-  "name": "floxtest",
+  "name": "crio-nix",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "."
