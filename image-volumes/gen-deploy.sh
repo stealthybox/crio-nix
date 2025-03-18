@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-STORE_PATHS="$(ls /nix/store)"
+STORE_PATHS="$(ls -d /nix/store/*/ | xargs -n1 basename)"
 NIX_DB_OCI_REPO="localhost:5001/stealthybox/nix-db:codespaces-scale"
 NIX_STORE_OCI_REPO="localhost:5001/stealthybox/nix-store"
 

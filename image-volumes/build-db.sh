@@ -1,7 +1,16 @@
 repo="localhost:5001/stealthybox/nix-db"
 tag="$1"
 
-docker build . \
-  --build-context "context=/nix/var/nix/db" \
-  -t "${repo}:${tag}"
+dir="/nix/var/nix/db"
+if [ ! -d "${dir}" ]; then
+  echo "${dir}" is not a directory.
+  exit 2
+fi
 
+cat << EOF > "/tmp/config-${tag}.json"
+{"nix-db-sha256": "$(sha256sum /nix/var/nix/db/db.sqlite)"}
+EOF
+cd "${dir}" && oras push \
+  --config "/tmp/config-${tag}.json:application/vnd.oci.image.config.v1+json" \
+  "${repo}:${tag}" \
+  .
