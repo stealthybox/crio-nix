@@ -1,4 +1,4 @@
-repo="localhost:5001/stealthybox/nix-db"
+repo="ghcr.io/stealthybox/nix-db"
 tag="$1"
 
 dir="/nix/var/nix/db"
@@ -10,7 +10,7 @@ fi
 cat << EOF > "/tmp/config-${tag}.json"
 {"nix-db-sha256": "$(sha256sum /nix/var/nix/db/db.sqlite)"}
 EOF
-cd "${dir}" && oras push \
+cd "${dir}" && sudo $(which oras) push \
   --config "/tmp/config-${tag}.json:application/vnd.oci.image.config.v1+json" \
   "${repo}:${tag}" \
   .
