@@ -52,6 +52,11 @@ nodes:
       kind: JoinConfiguration
       nodeRegistration:
         criSocket: unix:///var/run/crio/crio.sock
+    - |
+      apiVersion: kubelet.config.k8s.io/v1beta1
+      kind: KubeletConfiguration
+      registryPullQPS: 50
+      registryBurst: 100
 - role: worker
   image: stealthybox/kind-node-crio:v1.32.2
   kubeadmConfigPatches:
@@ -59,6 +64,11 @@ nodes:
       kind: JoinConfiguration
       nodeRegistration:
         criSocket: unix:///var/run/crio/crio.sock
+    - |
+      apiVersion: kubelet.config.k8s.io/v1beta1
+      kind: KubeletConfiguration
+      registryPullQPS: 50
+      registryBurst: 100
 - role: worker
   image: stealthybox/kind-node-crio:v1.32.2
   kubeadmConfigPatches:
@@ -66,6 +76,11 @@ nodes:
       kind: JoinConfiguration
       nodeRegistration:
         criSocket: unix:///var/run/crio/crio.sock
+    - |
+      apiVersion: kubelet.config.k8s.io/v1beta1
+      kind: KubeletConfiguration
+      registryPullQPS: 50
+      registryBurst: 100
 EOF
 
 fi
