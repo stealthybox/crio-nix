@@ -40,7 +40,7 @@ containerdConfigPatches:
     config_path = "/etc/containerd/certs.d"
 nodes:
 - role: control-plane
-  image: stealthybox/kind-node-crio:v1.32.2
+  image: ghcr.io/stealthybox/kind-node-crio:v1.32.2
   kubeadmConfigPatches:
     - |
       kind: InitConfiguration
@@ -58,7 +58,7 @@ nodes:
       registryPullQPS: 50
       registryBurst: 100
 - role: worker
-  image: stealthybox/kind-node-crio:v1.32.2
+  image: ghcr.io/stealthybox/kind-node-crio:v1.32.2
   kubeadmConfigPatches:
     - |
       kind: JoinConfiguration
@@ -70,7 +70,7 @@ nodes:
       registryPullQPS: 50
       registryBurst: 100
 - role: worker
-  image: stealthybox/kind-node-crio:v1.32.2
+  image: ghcr.io/stealthybox/kind-node-crio:v1.32.2
   kubeadmConfigPatches:
     - |
       kind: JoinConfiguration
